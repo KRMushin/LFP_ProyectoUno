@@ -8,6 +8,7 @@ import com.mycompany.proyectounolfp.backend.Secciones.ExtractorSecciones;
 import com.mycompany.proyectounolfp.backend.Secciones.Seccion;
 import com.mycompany.proyectounolfp.backend.util.TipoEstadoToken;
 import com.mycompany.proyectounolfp.backend.tokens.Token;
+import com.mycompany.proyectounolfp.bakend.analizadores.AnalizadorCss.AnalizadorCss;
 import com.mycompany.proyectounolfp.bakend.analizadores.analizadorHtml.AnalizadorHtml;
 
 
@@ -59,7 +60,7 @@ public class AnalizadorCodigoFuente {
                     tokensSeccion = analizadorHtml.analizarSeccion(seccion);
                     break;
                 case TipoEstadoToken.CSS:
-                    tokensSeccion = analizadorCss.analizarSeccion();
+                    tokensSeccion = analizadorCss.analizarSeccionCss(seccion);
                     break;
                 case TipoEstadoToken.JAVASCRIPT:
                     tokensSeccion = analizadorJavascript.analizarSeccion();
