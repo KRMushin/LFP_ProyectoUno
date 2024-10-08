@@ -31,5 +31,12 @@ public enum TipoTokenJs {
     PUNTO,
     PUNTO_COMA,
     COMA,
-    DOS_PUNTOS
+    DOS_PUNTOS,
+    NUMERO_ENTERO,
+    NUMERO_DECIMAL,
+    CADENA,
+    LAMBDA_EXPRESION,
+    BOOLEANO,
+    CIERRE_DOBLE,
+
 }

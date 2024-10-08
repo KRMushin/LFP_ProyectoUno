@@ -25,6 +25,10 @@ public class AutValoresDobles {
                 return Optional.of(new Token(TipoTokenJs.INCREMENTAL_INCREMENTO, valor));
             case "--":
                 return Optional.of(new Token(TipoTokenJs.INCREMENTAL_DECREMENTO, valor));
+            case "=>":
+                return Optional.of(new Token(TipoTokenJs.LAMBDA_EXPRESION, valor));
+            case "})":
+                return Optional.of(new Token(TipoTokenJs.CIERRE_DOBLE, valor));
             default:
                 return Optional.empty();
         }
