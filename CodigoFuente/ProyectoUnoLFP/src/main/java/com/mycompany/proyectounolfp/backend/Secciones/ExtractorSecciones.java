@@ -49,7 +49,7 @@ public class ExtractorSecciones {
                     tokenActual = new EstadoToken(TipoEstadoToken.CSS);
                     i += 4;
                     seccionIniciada = true;
-                } else if (codigoFuente.startsWith("[JS]", i)) {
+                } else if (codigoFuente.startsWith("[js]", i)) {
                     tokenActual = new EstadoToken(TipoEstadoToken.JAVASCRIPT);
                     i += 3;
                     seccionIniciada = true;

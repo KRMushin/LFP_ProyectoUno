@@ -81,7 +81,7 @@ public class AnalizadorCss {
                     } else if (caracter == '\'') {
                         lexemaActual.append(caracter);
                         estadoActual = ESTADO.CADENA;
-                    } else if (Character.isDigit(caracter)) {
+                    } else if (Character.isDigit(caracter)) { //clasificacion de enteros
                         tokensCss.add(new Token(TipoTokenCss.ENTERO, String.valueOf(caracter)));
                     } else if (caracter == ' ') {
                         // ignorar y permanecer en este estado
