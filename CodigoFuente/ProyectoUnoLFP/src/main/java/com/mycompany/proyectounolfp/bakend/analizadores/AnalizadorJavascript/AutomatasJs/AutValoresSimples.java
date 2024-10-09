@@ -10,41 +10,41 @@ public class AutValoresSimples {
         String valorString = String.valueOf(valor);
         switch (valorString){
             case "+":
-                return Optional.of(new Token(TipoTokenJs.ARITMETICO_SUMA, String.valueOf(valor)));
+                return Optional.of(new Token(TipoTokenJs.ARITMETICO_SUMA, String.valueOf(valor), "Javascript"));
             case "-":
-                return Optional.of(new Token(TipoTokenJs.ARITMETICO_RESTA, String.valueOf(valor)));
+                return Optional.of(new Token(TipoTokenJs.ARITMETICO_RESTA, String.valueOf(valor), "Javascript"));
             case "*":
-                return Optional.of(new Token(TipoTokenJs.ARITMETICO_MULTIPLICACION, String.valueOf(valor)));
+                return Optional.of(new Token(TipoTokenJs.ARITMETICO_MULTIPLICACION, String.valueOf(valor), "Javascript"));
             case "/":
-                return Optional.of(new Token(TipoTokenJs.ARITMETICO_DIVISION, String.valueOf(valor)));
+                return Optional.of(new Token(TipoTokenJs.ARITMETICO_DIVISION, String.valueOf(valor), "Javascript"));
             case ">":
-                return Optional.of(new Token(TipoTokenJs.RELACIONAL_MAYOR, valor));
+                return Optional.of(new Token(TipoTokenJs.RELACIONAL_MAYOR, valor, "Javascript"));
             case "<":
-                return Optional.of(new Token(TipoTokenJs.RELACIONAL_MENOR, valor));
+                return Optional.of(new Token(TipoTokenJs.RELACIONAL_MENOR, valor, "Javascript"));
             case "!":
-                return Optional.of(new Token(TipoTokenJs.LOGICO_NEGACION, valor));
+                return Optional.of(new Token(TipoTokenJs.LOGICO_NEGACION, valor, "Javascript"));
             case ")":
-                return Optional.of(new Token(TipoTokenJs.PARENTESIS_CERRADO, valor));
+                return Optional.of(new Token(TipoTokenJs.PARENTESIS_CERRADO, valor, "Javascript"));
             case "(":
-                return Optional.of(new Token(TipoTokenJs.PARENTESIS_ABIERTO, valor));
+                return Optional.of(new Token(TipoTokenJs.PARENTESIS_ABIERTO, valor, "Javascript"));
             case "{":
-                return Optional.of(new Token(TipoTokenJs.LLAVE_ABIERTA, valor));
+                return Optional.of(new Token(TipoTokenJs.LLAVE_ABIERTA, valor, "Javascript"));
             case "}":
-                return Optional.of(new Token(TipoTokenJs.LLAVE_CERRADA, valor));
+                return Optional.of(new Token(TipoTokenJs.LLAVE_CERRADA, valor, "Javascript"));
             case "[":
-                return Optional.of(new Token(TipoTokenJs.CORCHETE_ABIERTO, valor));
+                return Optional.of(new Token(TipoTokenJs.CORCHETE_ABIERTO, valor, "Javascript"));
             case "]":
-                return Optional.of(new Token(TipoTokenJs.CORCHETE_CERRADO, valor));
+                return Optional.of(new Token(TipoTokenJs.CORCHETE_CERRADO, valor, "Javascript"));
             case "=":
-                return Optional.of(new Token(TipoTokenJs.RELACIONAL_IGUAL, valor));
+                return Optional.of(new Token(TipoTokenJs.RELACIONAL_IGUAL, valor, "Javascript"));
             case ".":
-                return Optional.of(new Token(TipoTokenJs.PUNTO, valor));
+                return Optional.of(new Token(TipoTokenJs.PUNTO, valor, "Javascript"));
             case ";":
-                return Optional.of(new Token(TipoTokenJs.PUNTO_COMA, valor));
+                return Optional.of(new Token(TipoTokenJs.PUNTO_COMA, valor, "Javascript"));
             case ",":
-                return Optional.of(new Token(TipoTokenJs.COMA, valor));
+                return Optional.of(new Token(TipoTokenJs.COMA, valor, "Javascript"));
             case ":":
-                return Optional.of(new Token(TipoTokenJs.DOS_PUNTOS, valor));
+                return Optional.of(new Token(TipoTokenJs.DOS_PUNTOS, valor, "Javascript"));
             default:
                 return Optional.empty();
         }

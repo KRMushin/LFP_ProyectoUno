@@ -16,7 +16,6 @@ public class Seccion {
     private String contenido;
 
     public Seccion() {
-        
     }
 
     public EstadoToken getTokenEstado() {
@@ -34,7 +33,4 @@ public class Seccion {
     public void setContenido(String contenido) {
         this.contenido = contenido;
     }
-
-    
-    
 }

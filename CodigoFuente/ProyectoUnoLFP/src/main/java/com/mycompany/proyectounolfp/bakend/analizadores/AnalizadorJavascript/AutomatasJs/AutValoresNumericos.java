@@ -49,11 +49,11 @@ public class AutValoresNumericos {
             }
         }
         if (lexema.equals("-")) {
-            return Optional.of(new Token(TipoTokenJs.ARITMETICO_RESTA, lexema));
+            return Optional.of(new Token(TipoTokenJs.ARITMETICO_RESTA, lexema, "Javascript"));
         } else if (estadoActual == ESTADO.Q1){
-            return Optional.of(new Token(TipoTokenJs.NUMERO_ENTERO, lexema));
+            return Optional.of(new Token(TipoTokenJs.NUMERO_ENTERO, lexema, "Javascript"));
         }else if (estadoActual == ESTADO.Q2){
-            return Optional.of(new Token(TipoTokenJs.NUMERO_DECIMAL, lexema));
+            return Optional.of(new Token(TipoTokenJs.NUMERO_DECIMAL, lexema, "Javascript"));
         }
         return Optional.empty();}
 }

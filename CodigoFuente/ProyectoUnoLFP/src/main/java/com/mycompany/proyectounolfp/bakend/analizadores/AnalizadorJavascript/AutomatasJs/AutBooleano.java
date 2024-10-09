@@ -8,7 +8,7 @@ public class AutBooleano {
 
     public Optional<Token> evaluarBooleano(String lexema){
         if (lexema.equals("true") || lexema.equals("false")){
-            return Optional.of(new Token(TipoTokenJs.BOOLEANO, lexema));
+            return Optional.of(new Token(TipoTokenJs.BOOLEANO, lexema, "Javascript"));
         }
         return Optional.empty();
     }

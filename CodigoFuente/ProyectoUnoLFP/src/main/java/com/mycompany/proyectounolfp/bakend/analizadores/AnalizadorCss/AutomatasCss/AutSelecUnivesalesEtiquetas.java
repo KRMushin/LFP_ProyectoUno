@@ -41,11 +41,7 @@ public class AutSelecUnivesalesEtiquetas {
             if (estadoActual == ESTADO.ERROR) {
                 return false;
             }
-
         }
         return estadoActual == ESTADO.ACEPTACION || estadoActual == ESTADO.Q1; //aceptacion para valor universar '*' o etiqueta
-
-
     }
-
 }

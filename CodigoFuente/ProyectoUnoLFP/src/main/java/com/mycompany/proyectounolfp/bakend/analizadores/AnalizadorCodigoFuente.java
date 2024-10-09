@@ -11,6 +11,7 @@ import com.mycompany.proyectounolfp.backend.tokens.Token;
 import com.mycompany.proyectounolfp.bakend.analizadores.AnalizadorCss.AnalizadorCss;
 import com.mycompany.proyectounolfp.bakend.analizadores.AnalizadorJavascript.AnalizadorJavascript;
 import com.mycompany.proyectounolfp.bakend.analizadores.analizadorHtml.AnalizadorHtml;
+import com.mycompany.proyectounolfp.frontend.Vistas.PanelReportes;
 
 
 import java.util.ArrayList;
@@ -26,27 +27,43 @@ public class AnalizadorCodigoFuente {
     private final AnalizadorHtml analizadorHtml;
     private final AnalizadorCss analizadorCss;
     private final AnalizadorJavascript analizadorJavascript;
-    
-    /*  contructor del analizador que se ocupa de generar y refdirigir toda la logica del analisis lexico*/
+    private PanelReportes panelReportes;
+    /* contructor del analizador que se ocupa de generar y redirigir toda la logica del analisis lexico*/
     public AnalizadorCodigoFuente() {
         this.extractorSecciones = new ExtractorSecciones();
         this.analizadorHtml = new AnalizadorHtml();
         this.analizadorCss = new AnalizadorCss();
         this.analizadorJavascript = new AnalizadorJavascript();
+        this.panelReportes = new PanelReportes();
     }
-    
+
     public void analizarCodigoFuente(String codigoFuente){
         /* fases del analizador lexico , el cual se comunica con diferentes componentes*/
         List<Seccion> seccionesEncontradas = extractorSecciones.extraerSeccionesFuente(codigoFuente);
         List<Token> tokensAnalisis = obtenerTokensAnalisis(seccionesEncontradas);
+        List<Token> reporteTokens = obtenerTokensValidos(tokensAnalisis);
 
-        for (int i = 0; i < tokensAnalisis.size(); i++) {
-            Token token = tokensAnalisis.get(i);
+        if (!tokensAnalisis.isEmpty()) {
+            panelReportes.setVisible(true);
+            panelReportes.setReporteTokens(reporteTokens);
+        }
+//        List<Token> reporteTokens = obtenerTokensValidos(tokensAnalisis);
+//        List<Token> reporteOptimizacion = optimizarCodigo(tokensAnalisis);
+//        List<Token> reporteErrores = obtenerErrores(tokensAnalisis);
+
+        for (Token token : tokensAnalisis) {
             System.out.println(token.getLexema() + "   TipoToken: " + token.getTipoToken());
         }
     }
 
+    private List<Token> obtenerErrores(List<Token> tokensAnalisis) {
+        return null;
+    }
+
     private List<Token> optimizarCodigo(List<Token> tokensAnalisis) {
+        
+
+
         return null;
     }
 
@@ -74,5 +91,20 @@ public class AnalizadorCodigoFuente {
             }
         }
         return tokensEncontrados;
+    }
+
+    private List<Token> obtenerTokensValidos(List<Token> tokensAnalisis) {
+        List<Token> tokens = new ArrayList<>();
+        
+         for (int i = 0; i < tokensAnalisis.size(); i++) {
+               Token token = tokensAnalisis.get(i);
+               if (token != null) {
+               String tokenType = token.getTipoToken().toString();
+               if (!tokenType.equalsIgnoreCase("comentario") || !tokenType.equalsIgnoreCase("error")) {
+                   tokens.add(token);
+               }
+             }
+        }
+        return tokens;
     }
 }

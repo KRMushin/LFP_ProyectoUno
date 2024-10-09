@@ -21,7 +21,6 @@ public class AutColorRGBA {
             }
             indice++;
         }
-        // ver si hay tercer valor
         if (indice < tamañoLexema && cadena.charAt(indice) != ')') {
             double alpha = evaluarAFinal(cadena, indice);
             if (alpha == -1.0) {
@@ -30,14 +29,12 @@ public class AutColorRGBA {
             indice = siguienteIndice(cadena, indice);
         }
 
-        // Paso 4: Asegurarse de que terminamos con un paréntesis de cierre
         if (indice >= tamañoLexema || cadena.charAt(indice) != ')') {
             return false;
         }
 
         return true;
     }
-
     private int evaluarEntero(String cadena, int indice) {
         int longitud = cadena.length();
         int inicio = indice;
@@ -45,7 +42,7 @@ public class AutColorRGBA {
             indice++;
         }
         if (inicio == indice) {
-            return -1; // No se encontraron dígitos
+            return -1; // noo se encontraron dígitos
         }
         try {
             return Integer.parseInt(cadena.substring(inicio, indice));
@@ -53,7 +50,6 @@ public class AutColorRGBA {
             return -1;
         }
     }
-
     private double evaluarAFinal(String cadena, int indice) {
         int longitud = cadena.length();
         int inicio = indice;
@@ -73,7 +69,6 @@ public class AutColorRGBA {
             return -1.0;
         }
     }
-
     private int siguienteIndice(String cadena, int indice) {
         int longitud = cadena.length();
         while (indice < longitud && (cadena.charAt(indice) == ' ' || cadena.charAt(indice) == ',')) {

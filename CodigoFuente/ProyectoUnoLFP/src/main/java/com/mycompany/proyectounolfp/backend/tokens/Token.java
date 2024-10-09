@@ -1,17 +1,21 @@
 package com.mycompany.proyectounolfp.backend.tokens;
 
+import com.mycompany.proyectounolfp.backend.util.ExpresionRegular;
+
 public class Token {
 
     private Object tipoToken;
     private String lexema;
-    private String contexto; // representa el contexto html, css, js
+    private String contexto;
+    private ExpresionRegular expRegular;// representa el contexto html, css, js
 
     public Token(){
     }
-    public Token(Object tipoToken ,  String lexema  ) {
+    public Token(Object tipoToken ,  String lexema  , String contexto) {
         this.contexto = contexto;
         this.lexema = lexema;
         this.tipoToken = tipoToken;
+        this.expRegular = new ExpresionRegular();
     }
 
     public Object getTipoToken() {
@@ -36,5 +40,15 @@ public class Token {
 
     public void setContexto(String contexto) {
         this.contexto = contexto;
+    }
+
+    public Object getExpresionRegular() {
+        if (contexto.equalsIgnoreCase("javascript")) {
+            return expRegular.obtenerExpresionJS(this.tipoToken.toString(), this.lexema);
+        } else if (contexto.equalsIgnoreCase("css")) {
+            return expRegular.obtenerExpresionCSS(this.tipoToken.toString(), this.lexema);
+        } else {
+            return this.lexema;
+        }
     }
 }

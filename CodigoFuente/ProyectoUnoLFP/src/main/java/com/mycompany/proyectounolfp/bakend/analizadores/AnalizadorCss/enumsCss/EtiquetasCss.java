@@ -1,6 +1,4 @@
-package com.mycompany.proyectounolfp.bakend.analizadores.AnalizadorCss;
-
-import java.awt.*;
+package com.mycompany.proyectounolfp.bakend.analizadores.AnalizadorCss.enumsCss;
 
 public enum EtiquetasCss {
 

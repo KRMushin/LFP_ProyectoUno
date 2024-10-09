@@ -1,4 +1,4 @@
-package com.mycompany.proyectounolfp.bakend.analizadores.AnalizadorCss.AutomatasCss;
+package com.mycompany.proyectounolfp.bakend.analizadores.AnalizadorCss.enumsCss;
 
 public enum ReglasCss {
     color,
@@ -53,16 +53,16 @@ public enum ReglasCss {
     text_align,
     box_shadow;
 
-    public static boolean esReglaValida(String lexema){
-        if (lexema.equals("static") || lexema.equals("float")){
-            return true;
-        }
-        System.out.println("LEXEMA ANALIZAR " + lexema);
-        for (ReglasCss regla : ReglasCss.values()) {
-            if (regla.name().replace("_", "-").equals(lexema)){
-                return true;
-            }
-        }
-        return false;
-    }
 }
+//    public static boolean esReglaValida(String lexema){
+//        if (lexema.equals("static") || lexema.equals("float")){
+//            return true;
+//        }
+//        System.out.println("LEXEMA ANALIZAR " + lexema);
+//        for (ReglasCss regla : ReglasCss.values()) {
+//            if (regla.name().replace("_", "-").equals(lexema)){
+//                return true;
+//            }
+//        }
+//        return false;
+//    }

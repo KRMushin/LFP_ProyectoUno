@@ -6,6 +6,7 @@ package com.mycompany.proyectounolfp.bakend.analizadores.analizadorHtml;
 
 import com.mycompany.proyectounolfp.backend.Secciones.Seccion;
 import com.mycompany.proyectounolfp.backend.tokens.Token;
+import com.mycompany.proyectounolfp.bakend.analizadores.analizadorHtml.Automatas.AutEtiqueta;
 
 import java.util.*;
 
@@ -14,6 +15,11 @@ import java.util.*;
  * @author kevin-mushin
  */
 public class AnalizadorHtml {
+    private AutEtiqueta autEtiqueta;
+
+    public AnalizadorHtml() {
+        this.autEtiqueta = new AutEtiqueta();
+    }
     private enum Estado {
         Q0,//INICIO
         Q1, // LECTURA ETIQUETA
@@ -22,10 +28,78 @@ public class AnalizadorHtml {
     }
     private Estado estadoActual;
 
-    public AnalizadorHtml() {
-        this.estadoActual = Estado.Q0;
-    }
     public List<Token> analizarSeccion(Seccion seccion) {
+        List<Token> tokensHtml = new ArrayList<>();
+        StringBuilder lexemaActual = new StringBuilder();
+        Estado estadoActual = Estado.Q0;
+        String contenido = seccion.getContenido();
+
+        for (int i = 0; i < contenido.length(); i++) {
+            char caracter = contenido.charAt(i);
+
+            switch (estadoActual) {
+                case Q0:
+                    if (caracter == '<') {
+                        if (lexemaActual.length() > 0) {
+                            if (lexemaActual.length() > 0 && !lexemaActual.toString().trim().isEmpty()) {
+                            tokensHtml.add(new Token(TIpoTokenHtml.TEXTO, lexemaActual.toString(), "Html"));
+                            lexemaActual.setLength(0);
+                            }
+                        }
+                        lexemaActual.append(caracter);
+                        estadoActual = Estado.Q1;
+                    } else {
+                        lexemaActual.append(caracter);
+                    }
+                    break;
+
+                case Q1:
+                    if (caracter != '>') {
+                        lexemaActual.append(caracter);
+                    } else {
+                        lexemaActual.append(caracter);
+                        Optional<List<Token>> tokensOpt = obtenerTokens(lexemaActual.toString());
+
+                        if (tokensOpt.isPresent()) {
+                            tokensHtml.addAll(tokensOpt.get());
+                        } else {
+                            tokensHtml.add(new Token(TIpoTokenHtml.ERROR, lexemaActual.toString(), "Html"));
+                        }
+                        lexemaActual.setLength(0);
+                        estadoActual = Estado.Q0;
+                    }
+                    break;
+
+                case Q2: //texto
+                    if (caracter == '<') {
+                        if (lexemaActual.length() > 0) {
+                            if (lexemaActual.length() > 0 && !lexemaActual.toString().trim().isEmpty()) {
+                                tokensHtml.add(new Token(TIpoTokenHtml.TEXTO, lexemaActual.toString(), "Html"));
+                                lexemaActual.setLength(0);
+                            }
+                        }
+                        lexemaActual.append(caracter);
+                        estadoActual = Estado.Q1;  // cambiar al estado de lectura de etiqueta
+                    } else {
+                        lexemaActual.append(caracter);
+                    }
+                    break;
+            }
+        }
+
+        if (lexemaActual.length() > 0) {
+            tokensHtml.add(new Token(TIpoTokenHtml.TEXTO, lexemaActual.toString(), "Html"));
+        }
+
+        return tokensHtml;
+    }
+
+    private Optional<List<Token>> obtenerTokens(String etiqueta) {
+        return autEtiqueta.obtenerTokens(etiqueta);
+    }
+}
+/*
+public List<Token> analizarSeccion(Seccion seccion) {
         List<Token> tokens = new ArrayList<>();
         String contenido = seccion.getContenido();
         StringBuilder tokenBuilder = new StringBuilder();
@@ -35,12 +109,9 @@ public class AnalizadorHtml {
 
             switch (estadoActual){
                 case Q0:
-                    if (caracter == ' '){
-                        //se mantiene en este estado
-                        estadoActual = Estado.Q0;
-                    }else if (caracter == '<'){
-                        if (tokenBuilder.length() > 0) {
-                            tokens.add(new Token(TIpoTokenHtml.TEXTO, tokenBuilder.toString()));
+                    if (caracter == '<'){
+                        if (!tokenBuilder.isEmpty()) { // si el builder no esta vacio se toma como texto
+                            tokens.add(new Token(TIpoTokenHtml.TEXTO, tokenBuilder.toString(), "Html"));
                             tokenBuilder.setLength(0);
                         }
                         tokenBuilder.append(caracter);
@@ -48,27 +119,31 @@ public class AnalizadorHtml {
                     }else if(Character.isLetter(caracter)){
                         tokenBuilder.append(caracter);
                         estadoActual = Estado.Q3;//posible texto en la seccion
+                    }else{
+                        tokenBuilder.append(caracter);
                     }
                     break;
                 case Q1:
                     if (Character.isLetterOrDigit(caracter) || caracter == '=' || caracter == '\"' || caracter == ' ' || caracter == '/'){
                         tokenBuilder.append(caracter);
-                        estadoActual = Estado.Q1;
+                        estadoActual = Estado.Q1; // mantenerse en este estado
 
-                    }else if (caracter == '>'){
+                    }else if (caracter == '>'){ // cierre de etiqueta
                         tokenBuilder.append(caracter);
+
+
                         if (esTokenCorrecto(tokenBuilder.toString())){
                                 if(tokenBuilder.charAt(1) == '/'){
-                                    tokens.add(new Token(TIpoTokenHtml.ETIQUETA_CIERRE, tokenBuilder.toString()));
+                                    tokens.add(new Token(TIpoTokenHtml.ETIQUETA_CIERRE, tokenBuilder.toString(), "Html"));
                                 }else if (tokenBuilder.toString().trim().endsWith("/>") && !tokenBuilder.toString().startsWith("</")) {
-                                    tokens.add(new Token(TIpoTokenHtml.ETIQUETA_UNA_LINEA, tokenBuilder.toString()));
+                                    tokens.add(new Token(TIpoTokenHtml.ETIQUETA_UNA_LINEA, tokenBuilder.toString(), "Html"));
                                 }
                                 else{
-                                    tokens.add(new Token(TIpoTokenHtml.ETIQUETA_APERTURA, tokenBuilder.toString()));
+                                    tokens.add(new Token(TIpoTokenHtml.ETIQUETA_APERTURA, tokenBuilder.toString(), "Html"));
                                 }
                                 tokenBuilder.setLength(0);
                         }else {
-                            tokens.add(new Token(TIpoTokenHtml.ERROR, tokenBuilder.toString()));
+                            tokens.add(new Token(TIpoTokenHtml.ERROR, tokenBuilder.toString(), "Html"));
                             tokenBuilder.setLength(0);
                         }
                         estadoActual = Estado.Q0;
@@ -76,8 +151,8 @@ public class AnalizadorHtml {
                     break;
             case Q3:
                     if (caracter == '<') {
-                        if (tokenBuilder.length() > 0) {
-                            tokens.add(new Token(TIpoTokenHtml.TEXTO, tokenBuilder.toString()));
+                        if (!tokenBuilder.isEmpty()) {
+                            tokens.add(new Token(TIpoTokenHtml.TEXTO, tokenBuilder.toString(), "Html"));
                             tokenBuilder.setLength(0);
                         }
                         tokenBuilder.append(caracter);
@@ -88,8 +163,8 @@ public class AnalizadorHtml {
                     break;
             }
         }
-        if (tokenBuilder.length() > 0) {
-            tokens.add(new Token(TIpoTokenHtml.TEXTO, tokenBuilder.toString()));
+        if (!tokenBuilder.isEmpty()) {
+            tokens.add(new Token(TIpoTokenHtml.TEXTO, tokenBuilder.toString(), "Html"));
         }
         return tokens;
     }
@@ -104,8 +179,6 @@ public class AnalizadorHtml {
             etiquetaSinSimbolos = etiqueta.substring(1, etiqueta.length() - 1);
         }
 
-        System.out.println("etiqueta   " + etiqueta);
-        System.out.println("dep" + etiquetaSinSimbolos);
         List<String> partesEtiqueta = new ArrayList<>();
         StringBuilder palabra = new StringBuilder();
         boolean dentroComillas = false;
@@ -118,16 +191,15 @@ public class AnalizadorHtml {
                 palabra.append(c);
             } else if (c == ' ' && !dentroComillas) {
 
-                if (palabra.length() > 0) {
+                if (!palabra.isEmpty()) {
                     partesEtiqueta.add(palabra.toString());
-                    System.out.println(palabra.toString());
                     palabra.setLength(0); //reiniciar el buiilderString
                 }
             } else {
                 palabra.append(c);
             }
         }
-        if (palabra.length() > 0) {
+        if (!palabra.isEmpty()) {
             partesEtiqueta.add(palabra.toString());
         }
 
@@ -135,7 +207,7 @@ public class AnalizadorHtml {
             return false; // No se encontró una etiqueta válida
         }
 
-        String tipoEtiqueta = partesEtiqueta.get(0);
+        String tipoEtiqueta = partesEtiqueta.getFirst();
         if (!etiquetaValida(tipoEtiqueta)) {
             return false; //si la primera parte no es una etiqueta valida retorna false
         }
@@ -150,63 +222,20 @@ public class AnalizadorHtml {
         }
         return true; //retornar true si la etiqueta es válida
     }
-    private boolean etiquetaValida(String tag) {
-        String etiquetaTraducida = TIpoTokenHtml.traducirEtiqueta(tag); // traducir siempre el tag
-        return switch (etiquetaTraducida) {
-            case "main", "header","div", "nav", "aside", "ul", "ol", "li", "a", "section", "article",
-                 "form", "label", "textarea", "button", "footer", "h1", "h2", "h3", "h4", "h5", "h6", "p", "span",
-                 "input", "container" , "body"-> true;
-            default -> false;
-        };
-    }
-}
-/*
-*   ublic List<Token> analizarSeccion(Seccion seccion) {
-        List<Token> tokens = new ArrayList<>();
-        String contenido = seccion.getContenido();
-        StringBuilder tokenBuilder = new StringBuilder();
 
-        for (int i = 0; i < contenido.length(); i++) {
-            char caracter = contenido.charAt(i);
 
-            switch (estadoActual){
-                case Q0:
-                    if (caracter == ' '){
-                        //se mantiene en este estado
-                        estadoActual = Estado.Q0;
-                    }else if (caracter == '<'){
-                        tokenBuilder.append(caracter);
-                        estadoActual = Estado.Q1;
-                    }else if(Character.isLetter(caracter)){
-                        tokenBuilder.append(caracter);
-                        estadoActual = Estado.Q0;//posible texto en la seccion
-                    }
-                    break;
-                case Q1:
-                    if (Character.isLetterOrDigit(caracter) || caracter == '=' || caracter == '\"' || caracter == ' ' || caracter == '/'){
-                        tokenBuilder.append(caracter);
-                        estadoActual = Estado.Q1;
 
-                    }else if (caracter == '>'){
-                        tokenBuilder.append(caracter);
-                        if (esTokenCorrecto(tokenBuilder.toString())){
-                                if(tokenBuilder.charAt(1) == '/'){
-                                    tokens.add(new Token(TIpoTokenHtml.ETIQUETA_CIERRE, tokenBuilder.toString()));
-                                }else{
-                                    tokens.add(new Token(TIpoTokenHtml.ETIQUETA_APERTURA, tokenBuilder.toString()));
-                                }
-                                tokenBuilder.setLength(0);
-                        }else {
-                            tokens.add(new Token(TIpoTokenHtml.ERROR, tokenBuilder.toString()));
-                            tokenBuilder.setLength(0);
-                        }
-                        estadoActual = Estado.Q0;
-                    }
-            }
+
+    String etiquetaSinSimbolos;
+        TIpoTokenHtml tipoToken;
+
+        if (etiqueta.startsWith("</")) { // evalauar etiqueta de cierre
+            etiquetaSinSimbolos = etiqueta.substring(2, etiqueta.length() - 1);
+        } else if (etiqueta.endsWith("/>")) { // evaluar etiqueta de una linea
+            etiquetaSinSimbolos = etiqueta.substring(1, etiqueta.length() - 2);
+        } else if (etiqueta.endsWith("/>") && etiqueta.startsWith("</")) { // evaluar etiqueta de una linea
+            tokens.add(new Token(TIpoTokenHtml.ERROR, etiqueta, "Html"));
+        } else { // evaluar etiqueta de apertura
+            etiquetaSinSimbolos = etiqueta.substring(1, etiqueta.length() - 1);
         }
-
-
-        return tokens;
-    }
-*
 * */
