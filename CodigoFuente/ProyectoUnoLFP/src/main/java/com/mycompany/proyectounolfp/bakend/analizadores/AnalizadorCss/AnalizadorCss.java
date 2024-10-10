@@ -49,6 +49,8 @@ public class AnalizadorCss {
     public List<Token> analizarSeccionCss(Seccion seccion) {
         List<Token> tokensCss = new ArrayList<>();
         ESTADO estadoActual = ESTADO.Q0;
+        int filaActual = seccion.getLineaInicio();
+        int columnaActual = 1;
 
         char[] contenido = seccion.getContenido().toCharArray();
         boolean ultimoTokenEsSelector = false;  // Bandera para saber si el último token fue un selector
@@ -65,14 +67,13 @@ public class AnalizadorCss {
 
                     } else if (esCombinador(caracter) && ultimoTokenEsSelector) {
                             lexemaActual.append(caracter);
-                            tokensCss.add(new Token(TipoTokenCss.COMBINADOR, lexemaActual.toString(), "Css"));
+                            tokensCss.add(new Token(TipoTokenCss.COMBINADOR, lexemaActual.toString(), "Css",filaActual,columnaActual));
                             ultimoTokenEsSelector = false;
-
                             lexemaActual.setLength(0);
                         //permancer en el estado Q0
                     }else if (caracter == '*'){
                         lexemaActual.append(caracter);
-                        tokensCss.add(new Token(TipoTokenCss.UNIVERSAL, lexemaActual.toString(), "Css"));
+                        tokensCss.add(new Token(TipoTokenCss.UNIVERSAL, lexemaActual.toString(), "Css",filaActual,columnaActual));
                         lexemaActual.setLength(0);
                         ultimoTokenEsSelector = false;
                         //permaneceer en el estado Q0
@@ -80,18 +81,18 @@ public class AnalizadorCss {
                         lexemaActual.append(caracter);// evaluando id
                         estadoActual = ESTADO.CLASE_ID;
                     } else if (caracter == '%' || caracter == '(' || caracter == ')' || caracter == ',' || caracter == ';' || caracter == '{' || caracter == '}') {
-                        tokensCss.add(new Token(TipoTokenCss.CARACTERES_VALOR, String.valueOf(caracter), "Css"));
+                        tokensCss.add(new Token(TipoTokenCss.CARACTERES_VALOR, String.valueOf(caracter), "Css",filaActual,columnaActual));
                     } else if (caracter == ':' && contenido[i + 1] == ':'){
-                        tokensCss.add(new Token(TipoTokenCss.CARACTERES_VALOR, "::", "Css"));
+                        tokensCss.add(new Token(TipoTokenCss.CARACTERES_VALOR, "::", "Css",filaActual,columnaActual));
                     } else if (caracter == '\'') {
                         lexemaActual.append(caracter);
                         estadoActual = ESTADO.CADENA;
                     } else if (Character.isDigit(caracter)) { //clasificacion de enteros
-                        tokensCss.add(new Token(TipoTokenCss.ENTERO, String.valueOf(caracter), "Css"));
+                        tokensCss.add(new Token(TipoTokenCss.ENTERO, String.valueOf(caracter), "Css",filaActual,columnaActual));
                     } else if (caracter == ' ') {
                         // ignorar y permanecer en este estado
                     } else{
-                        tokensCss.add(new Token(TipoTokenCss.ERROR, String.valueOf(caracter), "Css"));
+                            tokensCss.add(new Token(TipoTokenCss.ERROR, String.valueOf(caracter), "Css",filaActual,columnaActual));
                     }
                     break;
 
@@ -104,37 +105,45 @@ public class AnalizadorCss {
                     if (Character.isLetterOrDigit(caracter) || caracter == '-' || caracter == '('){
                         lexemaActual.append(caracter);
                     } else if (caracter == ' ' || caracter == '\n' || caracter == ':' || caracter == ';' || caracter == ')') {
+                        System.out.println(         "entro a metodo" + caracter);
                         if (caracter == ')' ){
                             lexemaActual.append(caracter);
                         }
                         if (EtiquetasCss.esEtiquetaCss(lexemaActual.toString())){
-                            tokensCss.add(new Token(TipoTokenCss.ETIQUETA, lexemaActual.toString(), "Css"));
+                            tokensCss.add(new Token(TipoTokenCss.ETIQUETA, lexemaActual.toString(), "Css",filaActual,columnaActual));
                             lexemaActual.setLength(0);  // Limpiar el lexema
                             ultimoTokenEsSelector = true;
                             estadoActual = ESTADO.Q0;
                         } else if (automataReglas.esReglaCssValida(lexemaActual.toString())){
-                            tokensCss.add(new Token(TipoTokenCss.REGLAS_CSS, lexemaActual.toString(), "Css"));
+                            tokensCss.add(new Token(TipoTokenCss.REGLAS_CSS, lexemaActual.toString(), "Css",filaActual,columnaActual));
 
                             if (caracter == ':') {
-                                tokensCss.add(new Token(TipoTokenCss.CARACTERES_VALOR, ":", "Css"));
+                                tokensCss.add(new Token(TipoTokenCss.CARACTERES_VALOR, ":", "Css",filaActual,columnaActual));
                             }
                             lexemaActual.setLength(0);  // Limpiar el lexema
                             estadoActual = ESTADO.Q0;
                         } else if (automataOtros.esValorCssValido(lexemaActual.toString())) {
-                            tokensCss.add(new Token(TipoTokenCss.CARACTERES_VALOR, lexemaActual.toString(), "Css"));
+                            tokensCss.add(new Token(TipoTokenCss.CARACTERES_VALOR, lexemaActual.toString(), "Css",filaActual,columnaActual));
 
                             if (caracter == ';'){
-                                tokensCss.add(new Token(TipoTokenCss.CARACTERES_VALOR, ";", "Css"));
+                                tokensCss.add(new Token(TipoTokenCss.CARACTERES_VALOR, ";", "Css",filaActual,columnaActual));
                             }
                             lexemaActual.setLength(0);  // Limpiar el lexema
                             estadoActual = ESTADO.Q0;
                         } else if (esLexemaIdentificador(lexemaActual.toString())) {
-                            tokensCss.add(new Token(TipoTokenCss.IDENTIFICADOR, lexemaActual.toString(), "Css"));
+
+                            tokensCss.add(new Token(TipoTokenCss.IDENTIFICADOR, lexemaActual.toString(), "Css",filaActual,columnaActual));
+
+                            if(caracter == ';'){
+                                tokensCss.add(new Token(TipoTokenCss.CARACTERES_VALOR,";", "Css",filaActual,columnaActual));
+                            }
+
                             lexemaActual.setLength(0);  // Limpiar el lexema
                             estadoActual = ESTADO.Q0;
-
                         } else {
-                            tokensCss.add(new Token(TipoTokenCss.ERROR, lexemaActual.toString(), "Css"));
+                            if (!lexemaActual.toString().isEmpty()){
+                                tokensCss.add(new Token(TipoTokenCss.ERROR, lexemaActual.toString(), "Css",filaActual,columnaActual));
+                            }
                             lexemaActual.setLength(0);  // Limpiar el lexema
                             estadoActual = ESTADO.Q0;
                         }
@@ -144,9 +153,12 @@ public class AnalizadorCss {
                     }
                     break;
                 case CLASE_ID:
-                    if (caracter == 'f' && contenido[i + 1] == 'f'){
+                    System.out.println("LEXEMA ACTUAL: " + lexemaActual.toString());
+                    System.out.println("CARACTER: " + caracter);
+                    if (esHexadecimal(caracter)) {
+                        System.out.println("ENTRO A HEXADECIMAL");
                         lexemaActual.append(caracter);
-                        estadoActual = ESTADO.COLOR;
+                        estadoActual = ESTADO.COLOR; // Cambiar al estado de captura del color
                         break;
                     }
                     if(Character.isLetter(caracter) || Character.isDigit(caracter) || caracter == '-'){
@@ -154,17 +166,17 @@ public class AnalizadorCss {
                     } else if (caracter == ' ' || caracter == '\n') { // fin del lexema
                         if (automataClase.esClaseValida(lexemaActual.toString())){
                             if (lexemaActual.toString().startsWith("#")){
-                                tokensCss.add(new Token(TipoTokenCss.DE_ID, lexemaActual.toString(), "Css"));
+                                tokensCss.add(new Token(TipoTokenCss.DE_ID, lexemaActual.toString(), "Css",filaActual,columnaActual));
                             }else{
-                                tokensCss.add(new Token(TipoTokenCss.DE_CLASE, lexemaActual.toString(), "Css"));
+                                tokensCss.add(new Token(TipoTokenCss.DE_CLASE, lexemaActual.toString(), "Css",filaActual,columnaActual));
                             }
                         }else{
-                            tokensCss.add(new Token(TipoTokenCss.ERROR, lexemaActual.toString(), "Css"));
+                            tokensCss.add(new Token(TipoTokenCss.ERROR, lexemaActual.toString(), "Css",filaActual,columnaActual));
                         }
                         lexemaActual.setLength(0);//limpiar el lexema actual
                         estadoActual = ESTADO.Q0;
                     }else{
-                        tokensCss.add(new Token(TipoTokenCss.ERROR, lexemaActual.toString(), "Css"));
+                        tokensCss.add(new Token(TipoTokenCss.ERROR, lexemaActual.toString(), "Css",filaActual,columnaActual));
                         estadoActual = ESTADO.Q0;
                         lexemaActual.setLength(0);// limpiar
                     }
@@ -175,58 +187,49 @@ public class AnalizadorCss {
                             //permanencer en este estado
                         } else if (caracter == '\''){
                             lexemaActual.append(caracter);
-                            tokensCss.add(new Token(TipoTokenCss.CADENA, lexemaActual.toString(), "Css"));
+                            tokensCss.add(new Token(TipoTokenCss.CADENA, lexemaActual.toString(), "Css",filaActual,columnaActual));
                             lexemaActual.setLength(0);
                             estadoActual = ESTADO.Q0;
                         } else{
-                            tokensCss.add(new Token(TipoTokenCss.ERROR, lexemaActual.toString(), "Css"));
+                            tokensCss.add(new Token(TipoTokenCss.ERROR, lexemaActual.toString(), "Css",filaActual,columnaActual));
                             lexemaActual.setLength(0);
                             estadoActual = ESTADO.Q0;
                         }
                 break;
                 case COLOR:
-                    if(caracter == 'f'){
+                    if (esHexadecimal(caracter)) {
+                        System.out.println("ENTRO A HEXADECIMAL");
                         lexemaActual.append(caracter);
-                        //permacer en este estado
-                    } else if (caracter == ' ') {
-                            if (lexemaActual.toString().length() == 3 || lexemaActual.toString().length() == 6) {
-                                tokensCss.add(new Token(TipoTokenCss.COLOR, lexemaActual.toString(), "Css"));
-                                lexemaActual.setLength(0);
-                            }else{
-                                tokensCss.add(new Token(TipoTokenCss.ERROR, lexemaActual.toString(), "Css"));
-                                lexemaActual.setLength(0);
+                    } else {
+                        if (lexemaActual.length() == 4 || lexemaActual.length() == 7) {
+                            tokensCss.add(new Token(TipoTokenCss.COLOR, lexemaActual.toString(), "css", filaActual, columnaActual));
+                            if(caracter == ';'){
+                                tokensCss.add(new Token(TipoTokenCss.CARACTERES_VALOR,";", "Css",filaActual,columnaActual));
                             }
-                                estadoActual = ESTADO.Q0;
-                    } else{
-                        tokensCss.add(new Token(TipoTokenCss.ERROR, lexemaActual.toString(), "Css"));
+                        }else {
+                            lexemaActual.append(caracter);
+                            tokensCss.add(new Token(TipoTokenCss.ERROR, lexemaActual.toString(), "Css",filaActual,columnaActual));
+                        }
                         lexemaActual.setLength(0);
                         estadoActual = ESTADO.Q0;
                     }
-                break;
-                case COLOR_RGBA:
-                     if (Character.isLetterOrDigit(caracter) || caracter == ' ' || caracter == '(' || caracter == ','){
-                        lexemaActual.append(caracter);
-                        int contador = 0;
-                        if (caracter == ' '){
-                            contador++;
-                        }
-                        if (contador == 1){
-                            lexemaActual.setLength(0);
-                            estadoActual = ESTADO.Q0;
-                        }
-
-                     }else if (caracter == ')'){
-                            lexemaActual.append(caracter);
-                            tokensCss.add(new Token(TipoTokenCss.COLOR_RGBA, lexemaActual.toString(), "Css"));
-                            lexemaActual.setLength(0);
-                            estadoActual = ESTADO.Q0;
-                     }
-                     else{
-                            tokensCss.add(new Token(TipoTokenCss.ERROR, lexemaActual.toString(), "Css"));
-                            lexemaActual.setLength(0);
-                            estadoActual = ESTADO.Q0;
-                     }
                     break;
+                case COLOR_RGBA:
+                    if (caracter != ')'){
+                        lexemaActual.append(caracter);
+                    }else {
+                        lexemaActual.append(caracter);
+                        tokensCss.add(new Token(TipoTokenCss.COLOR_RGBA, lexemaActual.toString(), "Css",filaActual,columnaActual));
+                        lexemaActual.setLength(0);
+                        estadoActual = ESTADO.Q0;
+                    }
+                    break;
+            }
+            if (caracter == '\n') {
+                filaActual++;
+                columnaActual = 1;
+            } else {
+                columnaActual++;
             }
         }
         return tokensCss;
@@ -261,5 +264,11 @@ public class AnalizadorCss {
 
     private boolean esCombinador(char caracter) {
         return caracter == '+' || caracter == '>' || caracter == '~' || caracter == ' ';
+    }
+
+    private boolean esHexadecimal(char caracter) {
+        return (caracter >= '0' && caracter <= '9') ||
+                (caracter >= 'a' && caracter <= 'f') ||
+                (caracter >= 'A' && caracter <= 'F');
     }
 }

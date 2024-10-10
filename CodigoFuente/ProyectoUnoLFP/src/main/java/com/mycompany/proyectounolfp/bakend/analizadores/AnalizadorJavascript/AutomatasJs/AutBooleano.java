@@ -6,9 +6,9 @@ import java.util.Optional;
 
 public class AutBooleano {
 
-    public Optional<Token> evaluarBooleano(String lexema){
+    public Optional<Token> evaluarBooleano(String lexema,int nF, int nC){
         if (lexema.equals("true") || lexema.equals("false")){
-            return Optional.of(new Token(TipoTokenJs.BOOLEANO, lexema, "Javascript"));
+            return Optional.of(new Token(TipoTokenJs.BOOLEANO, lexema, "Javascript", nF, nC));
         }
         return Optional.empty();
     }

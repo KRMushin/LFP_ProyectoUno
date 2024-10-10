@@ -27,4 +27,14 @@ public class ExpresionRegular {
                 return lexema;
         }
     }
+
+    public Object obtenerExpresionOptimizar(String string, String lexema) {
+
+        switch (string.toUpperCase()) {
+            case "COMENTARIO":
+                return "// [a-zA-Z]|[0-9]|[.]";
+            default:
+                return lexema;
+        }
+    }
 }

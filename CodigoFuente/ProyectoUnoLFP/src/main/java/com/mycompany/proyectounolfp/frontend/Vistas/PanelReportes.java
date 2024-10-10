@@ -26,6 +26,9 @@ public class PanelReportes extends javax.swing.JFrame {
     private JTable tablaReporte;
     private DefaultTableModel tableModel;
     private List<Token> reporteTokens;
+    private List<Token> reporteErrores;
+    private List<Token> reporteOptimizacion;
+
     /**
      * Creates new form PanelReportes
      */
@@ -43,7 +46,22 @@ public class PanelReportes extends javax.swing.JFrame {
         this.reporteTokens = reporteTokens;
     }
 
-    
+    public List<Token> getReporteErrores() {
+        return reporteErrores;
+    }
+
+    public void setReporteErrores(List<Token> reporteErrores) {
+        this.reporteErrores = reporteErrores;
+    }
+
+    public List<Token> getReporteOptimizacion() {
+        return reporteOptimizacion;
+    }
+
+    public void setReporteOptimizacion(List<Token> reporteOptimizacion) {
+        this.reporteOptimizacion = reporteOptimizacion;
+    }
+
     private void configuracionPanel(){
         panelContenedor.setLayout(new BorderLayout());
 
@@ -91,34 +109,50 @@ private void mostrarReporteTokens() {
             datos[i][1] = token.getExpresionRegular(); // Asumiendo que hay un método getExpresionRegular()
             datos[i][2] = token.getContexto();        // Asumiendo que hay un método getLenguaje()
             datos[i][3] = token.getTipoToken().toString();            // Asumiendo que hay un método getTipo()
-//            datos[i][4] = token.getFila();            // Asumiendo que hay un método getFila()
-//            datos[i][5] = token.getColumna();         // Asumiendo que hay un método getColumna()
+            datos[i][4] = token.getFila();            // Asumiendo que hay un método getFila()
+            datos[i][5] = token.getColumna();         // Asumiendo que hay un método getColumna()
         }
     actualizarTabla(columnas, datos);
 }
 }
 
+private void mostrarReporteErrores() {
+    String[] columnas = {"Token", "Lugar de Error", "Tipo", "Fila" , "Columna"};
+    if (reporteErrores != null && !reporteErrores.isEmpty()) {
+        Object[][] datos = new Object[reporteErrores.size()][6];  // Creamos una matriz para almacenar los datos
+
+        for (int i = 0; i < reporteErrores.size(); i++) {
+            Token token = reporteErrores.get(i);
+            datos[i][0] = token.getLexema();
+            datos[i][1] = token.getContexto();        // Asumiendo que hay un método getLenguaje()
+            datos[i][2] = token.getTipoToken().toString();            // Asumiendo que hay un método getTipo()
+            datos[i][3] = token.getFila();            // Asumiendo que hay un método getFila()
+            datos[i][4] = token.getColumna();         // Asumiendo que hay un método getColumna()
+        }
+        actualizarTabla(columnas, datos);
+    }
+}
 // Método para mostrar el reporte de Optimización
 private void mostrarReporteOptimizacion() {
-    String[] columnas = {"Optimización", "Descripción", "Línea"};
-    Object[][] datos = {
-        {"Reducción de Expresiones", "Se redujo x*1 a x", "10"},
-        {"Eliminación de Código Muerto", "Código en línea 15 eliminado", "15"},
-        // Agrega más datos según sea necesario
-    };
-    actualizarTabla(columnas, datos);
+    String[] columnas = {"Token", "ExpresionRegular", "Lenguaje", "Tipo", "Fila", "Columna"};
+    if (reporteOptimizacion != null && !reporteOptimizacion.isEmpty()) {
+        Object[][] datos = new Object[reporteOptimizacion.size()][6];  // Creamos una matriz para almacenar los datos
+
+        for (int i = 0; i < reporteOptimizacion.size(); i++) {
+            Token token = reporteOptimizacion.get(i);
+            datos[i][0] = token.getLexema();
+            datos[i][1] = token.getExpresionRegular();        // Asumiendo que hay un método getLenguaje()
+            datos[i][2] = token.getTipoToken().toString();            // Asumiendo que hay un método getTipo()
+            datos[i][3] = token.getContexto();            // Asumiendo que hay un método getFila()
+            datos[i][4] = token.getFila();            // Asumiendo que hay un método getFila()
+            datos[i][5] = token.getColumna();         // Asumiendo que hay un método getColumna()
+
+        }
+        actualizarTabla(columnas, datos);
+    }
 }
 
 // Método para mostrar el reporte de Errores
-private void mostrarReporteErrores() {
-    String[] columnas = {"Tipo de Error", "Descripción", "Línea"};
-    Object[][] datos = {
-        {"Error Sintáctico", "Se esperaba ';' al final", "20"},
-        {"Error Léxico", "Carácter no reconocido", "5"},
-        // Agrega más datos según sea necesario
-    };
-    actualizarTabla(columnas, datos);
-}
 private void actualizarTabla(String[] columnas, Object[][] datos) {
     tableModel.setDataVector(datos, columnas);  // Actualiza el modelo de la tabla con las nuevas columnas y datos
 }

@@ -6,6 +6,7 @@ package com.mycompany.proyectounolfp.bakend.analizadores.AnalizadorJavascript;
 
 import com.mycompany.proyectounolfp.backend.Secciones.Seccion;
 import com.mycompany.proyectounolfp.backend.tokens.Token;
+import com.mycompany.proyectounolfp.backend.util.TipoEstadoToken;
 import com.mycompany.proyectounolfp.bakend.analizadores.AnalizadorJavascript.AutomatasJs.*;
 
 import java.sql.SQLOutput;
@@ -50,8 +51,11 @@ public class AnalizadorJavascript {
         List<Token> tokensJs = new ArrayList<>();
         String contenido = seccion.getContenido();
         StringBuilder lexemaActual = new StringBuilder();
-
         ESTADO estadoActual = ESTADO.Q0;
+        tokensJs.add(new Token(TipoEstadoToken.JAVASCRIPT, ">>[js]", "Javascript", seccion.getLineaInicio(),7));
+
+        int filaActual = seccion.getLineaInicio(); // Usar la línea de inicio de la sección
+        int columnaActual = 1;
 
         for (int i = 0; i < contenido.length(); i++) {
             char caracter = contenido.charAt(i);
@@ -73,7 +77,7 @@ public class AnalizadorJavascript {
                         lexemaActual.append(caracter);
                         estadoActual = ESTADO.EVALUAR_CADENA;
                     } else if (caracter == ';') {
-                        tokensJs.add(new Token(TipoTokenJs.PUNTO_COMA, String.valueOf(caracter), "Javascript"));
+                        tokensJs.add(new Token(TipoTokenJs.PUNTO_COMA, String.valueOf(caracter), "Javascript", filaActual,columnaActual));
                     } else {
                         if (!Character.isWhitespace(caracter)) {
                             lexemaActual.append(caracter);
@@ -85,20 +89,20 @@ public class AnalizadorJavascript {
                         lexemaActual.append(caracter);// permanece en el mismo estado
                     } else if (caracter == ' ' || caracter == '\n' || caracter == '(' || caracter == ')' || caracter == '.') {
                         if (palabrasReservadas.esPalabraReservada(lexemaActual.toString())) {
-                            tokensJs.add(new Token(TipoTokenJs.RESERVADA, lexemaActual.toString(), "Javascript"));
-                            if (valoresSimples.clasificarValorSimple(String.valueOf(caracter)).isPresent()) { // retorna el alor por ejemplo  . o ( o )
-                                tokensJs.add(valoresSimples.clasificarValorSimple(String.valueOf(caracter)).get()); // esto xq existen palabras como (section){}
+                            tokensJs.add(new Token(TipoTokenJs.RESERVADA, lexemaActual.toString(), "Javascript", filaActual,columnaActual));
+                            if (valoresSimples.clasificarValorSimple(String.valueOf(caracter),filaActual,columnaActual).isPresent()) { // retorna el alor por ejemplo  . o ( o )
+                                tokensJs.add(valoresSimples.clasificarValorSimple(String.valueOf(caracter),filaActual,columnaActual).get()); // esto xq existen palabras como (section){}
                             }
-                        } else if (valoresBooleanos.evaluarBooleano(lexemaActual.toString()).isPresent()) {
-                            tokensJs.add(valoresBooleanos.evaluarBooleano(lexemaActual.toString()).get());
+                        } else if (valoresBooleanos.evaluarBooleano(lexemaActual.toString(),filaActual,columnaActual).isPresent()) {
+                            tokensJs.add(valoresBooleanos.evaluarBooleano(lexemaActual.toString(),filaActual,columnaActual).get());
 
                         } else if (automataIdentificador.esIdentificadorValido(lexemaActual.toString())) {
-                            tokensJs.add(new Token(TipoTokenJs.IDENTIFICADOR, lexemaActual.toString(), "Javascript"));
-                            if (valoresSimples.clasificarValorSimple(String.valueOf(caracter)).isPresent()) { // retorna el alor por ejemplo  . o ( o )
-                                tokensJs.add(valoresSimples.clasificarValorSimple(String.valueOf(caracter)).get());
+                            tokensJs.add(new Token(TipoTokenJs.IDENTIFICADOR, lexemaActual.toString(), "Javascript", filaActual,columnaActual));
+                            if (valoresSimples.clasificarValorSimple(String.valueOf(caracter),filaActual,columnaActual).isPresent()) { // retorna el alor por ejemplo  . o ( o )
+                                tokensJs.add(valoresSimples.clasificarValorSimple(String.valueOf(caracter),filaActual,columnaActual).get());
                             }    // esto xq existen palabras como (section){}
                         } else {
-                            tokensJs.add(new Token(TipoTokenJs.ERROR, lexemaActual.toString(), "Javascript"));
+                            tokensJs.add(new Token(TipoTokenJs.ERROR, lexemaActual.toString(), "Javascript", filaActual,columnaActual));
                         }
                         estadoActual = ESTADO.Q0;
                         lexemaActual.setLength(0);
@@ -108,9 +112,9 @@ public class AnalizadorJavascript {
                             if (caracter != ';'){
                                 lexemaActual.append(caracter);
                             }else {
-                                tokensJs.add(new Token(TipoTokenJs.PUNTO_COMA, String.valueOf(';'), "Javascript"));
+                                tokensJs.add(new Token(TipoTokenJs.PUNTO_COMA, String.valueOf(';'), "Javascript", filaActual,columnaActual));
                             }
-                            tokensJs.add(new Token(TipoTokenJs.ERROR, lexemaActual.toString(), "Javascript"));
+                            tokensJs.add(new Token(TipoTokenJs.ERROR, lexemaActual.toString(), "Javascript", filaActual,columnaActual));
                             estadoActual = ESTADO.Q0;
                             lexemaActual.setLength(0);
                             break;
@@ -124,9 +128,9 @@ public class AnalizadorJavascript {
                         lexemaActual.append(caracter);
                     } else if (caracter == ' ' || caracter == '\n' || caracter == '/' || caracter == ';' || caracter == '.' || Character.isLetter(caracter)) {
                         String lex = lexemaActual.toString();
-                        if (valoresSimples.clasificarValorSimple(lex).isPresent()) {
+                        if (valoresSimples.clasificarValorSimple(lex,filaActual,columnaActual).isPresent()) {
                             System.out.println("caracter de aca" + caracter);
-                            tokensJs.add(valoresSimples.clasificarValorSimple(lex).get());
+                            tokensJs.add(valoresSimples.clasificarValorSimple(lex,filaActual,columnaActual).get());
                             estadoActual = ESTADO.Q0;
                             if (caracter == '/') {
                                 lexemaActual.setLength(0);
@@ -139,8 +143,8 @@ public class AnalizadorJavascript {
                                 break;
                             }
                             lexemaActual.setLength(0);
-                        } else if (valoresDobles.clasificarValorDoble(lex).isPresent()) {
-                            tokensJs.add(valoresDobles.clasificarValorDoble(lex).get());
+                        } else if (valoresDobles.clasificarValorDoble(lex,filaActual,columnaActual).isPresent()) {
+                            tokensJs.add(valoresDobles.clasificarValorDoble(lex,filaActual,columnaActual).get());
                             estadoActual = ESTADO.Q0;
                             lexemaActual.setLength(0);
                         } else if (lex.equals("//")) {
@@ -148,17 +152,17 @@ public class AnalizadorJavascript {
                             estadoActual = ESTADO.COMENTARIO;
                             break;
                         } else {
-                            tokensJs.add(new Token(TipoTokenJs.ERROR, lex, "Javascript"));
+                            tokensJs.add(new Token(TipoTokenJs.ERROR, lex, "Javascript", filaActual,columnaActual));
                             estadoActual = ESTADO.Q0;
                             lexemaActual.setLength(0);
                         }
                     } else {
-                        tokensJs.add(new Token(TipoTokenJs.ERROR, lexemaActual.toString(), "Javascript"));
+                        tokensJs.add(new Token(TipoTokenJs.ERROR, lexemaActual.toString(), "Javascript", filaActual,columnaActual));
                         estadoActual = ESTADO.Q0;
                         lexemaActual.setLength(0);
                     }
                     if (caracter == ';'){
-                        tokensJs.add(new Token(TipoTokenJs.PUNTO_COMA, String.valueOf(caracter), "Javascript"));
+                        tokensJs.add(new Token(TipoTokenJs.PUNTO_COMA, String.valueOf(caracter), "Javascript", filaActual,columnaActual));
                     }
                     break;
                 case EVALUAR_SLASH:
@@ -166,10 +170,10 @@ public class AnalizadorJavascript {
                         lexemaActual.append(caracter);
                         estadoActual = ESTADO.COMENTARIO;
                     } else {
-                        if (valoresSimples.clasificarValorSimple(lexemaActual.toString()).isPresent()){
-                            tokensJs.add(valoresSimples.clasificarValorSimple(lexemaActual.toString()).get());
+                        if (valoresSimples.clasificarValorSimple(lexemaActual.toString(),filaActual,columnaActual).isPresent()){
+                            tokensJs.add(valoresSimples.clasificarValorSimple(lexemaActual.toString(),filaActual,columnaActual).get());
                         }else {
-                            tokensJs.add(new Token(TipoTokenJs.ERROR, lexemaActual.toString(), "Javascript"));
+                            tokensJs.add(new Token(TipoTokenJs.ERROR, lexemaActual.toString(), "Javascript", filaActual,columnaActual));
                         }
                         estadoActual = ESTADO.Q0;
                         lexemaActual.setLength(0);
@@ -177,7 +181,7 @@ public class AnalizadorJavascript {
                     break;
                 case COMENTARIO:
                     if (caracter == '\n'){
-                        tokensJs.add(new Token(TipoTokenJs.COMENTARIO, lexemaActual.toString(), "Javascript"));
+                        tokensJs.add(new Token(TipoTokenJs.COMENTARIO, lexemaActual.toString(), "Javascript", filaActual,columnaActual));
                         estadoActual = ESTADO.Q0;
                         lexemaActual.setLength(0);
                     } else {
@@ -189,18 +193,20 @@ public class AnalizadorJavascript {
                         lexemaActual.append(caracter);//permanecer en este estado
                     } else if (caracter == ' ' || caracter == '\n' || caracter == ';') {
                         String lex = lexemaActual.toString();
-                        if (valoresNumericos.evaluarNumero(lex).isPresent()){
-                            tokensJs.add(valoresNumericos.evaluarNumero(lex).get());
+                        if (valoresNumericos.evaluarNumero(lex,filaActual,columnaActual).isPresent()){
+                            tokensJs.add(valoresNumericos.evaluarNumero(lex,filaActual,columnaActual).get());
+                            filaActual = valoresNumericos.getnF();
+                            columnaActual = valoresNumericos.getnC();
                         }else {
-                            tokensJs.add(new Token(TipoTokenJs.ERROR, lex, "Javascript"));
+                            tokensJs.add(new Token(TipoTokenJs.ERROR, lex, "Javascript", filaActual,columnaActual));
                         }
                         if (caracter == ';'){
-                            tokensJs.add(new Token(TipoTokenJs.PUNTO_COMA, String.valueOf(caracter), "Javascript"));
+                            tokensJs.add(new Token(TipoTokenJs.PUNTO_COMA, String.valueOf(caracter), "Javascript", filaActual,columnaActual));
                         }
                             estadoActual = ESTADO.Q0;
                             lexemaActual.setLength(0);
                     } else {
-                        tokensJs.add(new Token(TipoTokenJs.ERROR, lexemaActual.toString(), "Javascript"));
+                        tokensJs.add(new Token(TipoTokenJs.ERROR, lexemaActual.toString(), "Javascript", filaActual,columnaActual));
                         estadoActual = ESTADO.Q0;
                         lexemaActual.setLength(0);
                     }
@@ -208,11 +214,11 @@ public class AnalizadorJavascript {
                 case EVALUAR_CADENA:
                     if (caracter == '\"' || caracter == '\'' || caracter == '`'){
                         lexemaActual.append(caracter);
-                        tokensJs.add(new Token(TipoTokenJs.CADENA, lexemaActual.toString(), "Javascript"));
+                        tokensJs.add(new Token(TipoTokenJs.CADENA, lexemaActual.toString(), "Javascript", filaActual,columnaActual));
                         estadoActual = ESTADO.Q0;
                         lexemaActual.setLength(0);
                     } else if (caracter == '\n'){
-                        tokensJs.add(new Token(TipoTokenJs.ERROR, lexemaActual.toString(), "Javascript"));
+                        tokensJs.add(new Token(TipoTokenJs.ERROR, lexemaActual.toString(), "Javascript", filaActual,columnaActual));
                         estadoActual = ESTADO.Q0;
                         lexemaActual.setLength(0);
                     } else {
@@ -222,7 +228,12 @@ public class AnalizadorJavascript {
                 default:
                     estadoActual = ESTADO.ERROR;
             }
-
+            if (caracter == '\n') {
+                filaActual++;
+                columnaActual = 1;
+            } else {
+                columnaActual++;
+            }
         }
         return tokensJs;
     }

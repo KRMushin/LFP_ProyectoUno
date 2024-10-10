@@ -6,16 +6,20 @@ public class Token {
 
     private Object tipoToken;
     private String lexema;
-    private String contexto;
-    private ExpresionRegular expRegular;// representa el contexto html, css, js
+    private String contexto;// representa el contexto html, css, js
+    private ExpresionRegular expRegular;
+    private int fila;
+    private int columna;
 
     public Token(){
     }
-    public Token(Object tipoToken ,  String lexema  , String contexto) {
+    public Token(Object tipoToken ,  String lexema  , String contexto, int fila, int columna) {
         this.contexto = contexto;
         this.lexema = lexema;
         this.tipoToken = tipoToken;
         this.expRegular = new ExpresionRegular();
+        this.fila = fila;
+        this.columna = columna - lexema.length();
     }
 
     public Object getTipoToken() {
@@ -42,11 +46,30 @@ public class Token {
         this.contexto = contexto;
     }
 
+    public int getColumna() {
+        return columna;
+    }
+
+    public void setColumna(int columna) {
+        this.columna = columna;
+    }
+
+    public int getFila() {
+        return fila;
+    }
+
+    public void setFila(int fila) {
+        this.fila = fila;
+    }
+
     public Object getExpresionRegular() {
         if (contexto.equalsIgnoreCase("javascript")) {
             return expRegular.obtenerExpresionJS(this.tipoToken.toString(), this.lexema);
         } else if (contexto.equalsIgnoreCase("css")) {
             return expRegular.obtenerExpresionCSS(this.tipoToken.toString(), this.lexema);
+        } else if (contexto.equalsIgnoreCase("optimizacion")) {
+            return expRegular.obtenerExpresionOptimizar(this.tipoToken.toString(), this.lexema);
+
         } else {
             return this.lexema;
         }

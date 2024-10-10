@@ -7,31 +7,31 @@ public class AutReglas {
         // Comprobar propiedades relacionadas con color
         if (string.equals("color")) {
             return true;
-        } else if (string.equals("background_color")) {
+        } else if (string.equals("background-color")) {
             return true;
         } else if (string.equals("background")) {
             return true;
         }
-        else if (string.equals("font_size")) {
+        else if (string.equals("font-size")) {
             return true;
-        } else if (string.equals("font_weight")) {
+        } else if (string.equals("font-weight")) {
             return true;
-        } else if (string.equals("font_family")) {
+        } else if (string.equals("font-family")) {
             return true;
-        } else if (string.equals("font_align")) {
+        } else if (string.equals("font-align")) {
             return true;
         }
         else if (string.equals("width")) {
             return true;
         } else if (string.equals("height")) {
             return true;
-        } else if (string.equals("min_width")) {
+        } else if (string.equals("min-width")) {
             return true;
-        } else if (string.equals("min_height")) {
+        } else if (string.equals("min-height")) {
             return true;
-        } else if (string.equals("max_width")) {
+        } else if (string.equals("max-width")) {
             return true;
-        } else if (string.equals("max_height")) {
+        } else if (string.equals("max-height")) {
             return true;
         }
         else if (string.equals("display")) {
@@ -40,7 +40,7 @@ public class AutReglas {
             return true;
         } else if (string.equals("block")) {
             return true;
-        } else if (string.equals("inline_block")) {
+        } else if (string.equals("inline-block")) {
             return true;
         } else if (string.equals("flex")) {
             return true;
@@ -55,26 +55,26 @@ public class AutReglas {
             return true;
         } else if (string.equals("padding")) {
             return true;
-        } else if (string.equals("border_color")) {
+        } else if (string.equals("border-color")) {
             return true;
-        } else if (string.equals("border_style")) {
+        } else if (string.equals("border-style")) {
             return true;
-        } else if (string.equals("border_width")) {
+        } else if (string.equals("border-width")) {
             return true;
-        } else if (string.equals("border_top")) {
+        } else if (string.equals("border-top")) {
             return true;
-        } else if (string.equals("border_bottom")) {
+        } else if (string.equals("border-bottom")) {
             return true;
-        } else if (string.equals("border_left")) {
+        } else if (string.equals("border-left")) {
             return true;
-        } else if (string.equals("border_right")) {
+        } else if (string.equals("border-right")) {
             return true;
         }
-        else if (string.equals("box_sizing")) {
+        else if (string.equals("box-sizing")) {
             return true;
-        } else if (string.equals("border_box")) {
+        } else if (string.equals("border-box")) {
             return true;
-        } else if (string.equals("content_box")) {
+        } else if (string.equals("content-box")) {
             return true;
         } else if (string.equals("position")) {
             return true;
@@ -94,21 +94,21 @@ public class AutReglas {
             return true;
         } else if (string.equals("right")) {
             return true;
-        } else if (string.equals("z_index")) {
+        } else if (string.equals("z-index")) {
             return true;
-        } else if (string.equals("justify_content")) {
+        } else if (string.equals("justify-content")) {
             return true;
-        } else if (string.equals("align_items")) {
+        } else if (string.equals("align-items")) {
             return true;
-        } else if (string.equals("border_radius")) {
+        } else if (string.equals("border-radius")) {
             return true;
         } else if (string.equals("auto")) {
             return true;
-        } else if (string.equals("list_style")) {
+        } else if (string.equals("list-style")) {
             return true;
-        } else if (string.equals("text_align")) {
+        } else if (string.equals("text-align")) {
             return true;
-        } else if (string.equals("box_shadow")) {
+        } else if (string.equals("box-shadow")) {
             return true;
         }
         else {

@@ -31,6 +31,40 @@ public class TraductorHtml {
         traducciones.put("piepagina", "footer");
     }
     public String traducirEtiqueta(String etiqueta) {
-        return traducciones.getOrDefault(etiqueta, etiqueta);
+        // Primero, intentamos traducir la etiqueta
+        String traduccion = traducciones.get(etiqueta);
+
+        // Si no está en las traducciones, verificamos si es una etiqueta HTML estándar en inglés usando switch
+        if (traduccion == null) {
+            switch (etiqueta) {
+                case "main":
+                case "header":
+                case "nav":
+                case "aside":
+                case "ul":
+                case "ol":
+                case "li":
+                case "a":
+                case "div":
+                case "section":
+                case "h1":
+                case "h2":
+                case "h3":
+                case "h4":
+                case "h5":
+                case "h6":
+                case "p":
+                case "input":
+                case "form":
+                case "textarea":
+                case "button":
+                case "footer":
+                    return etiqueta;
+                default:
+                    return null;
+            }
+        }
+
+        return traduccion;
     }
 }

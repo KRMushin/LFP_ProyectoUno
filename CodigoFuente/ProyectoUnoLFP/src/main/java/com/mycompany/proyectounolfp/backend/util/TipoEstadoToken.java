@@ -10,6 +10,6 @@ package com.mycompany.proyectounolfp.backend.util;
  */
 public enum TipoEstadoToken {
     
-    HTML,CSS,JAVASCRIPT,INVALID;
+    HTML,CSS,JAVASCRIPT,INVALID, OPTIMIZACION, OPTIMIZACION_LINEA;
     
 }

@@ -4,6 +4,7 @@ import com.mycompany.proyectounolfp.backend.tokens.Token;
 import com.mycompany.proyectounolfp.bakend.analizadores.analizadorHtml.TIpoTokenHtml;
 import com.mycompany.proyectounolfp.bakend.analizadores.analizadorHtml.TraductorHtml;
 
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -12,6 +13,8 @@ public class AutEtiqueta {
 
     private AutPalabraReservada palabraReservada;
     private TraductorHtml traductorHtml;
+    private int numeroFila;
+    private int numeroColumna;
 
     public AutEtiqueta() {
         this.palabraReservada = new AutPalabraReservada();
@@ -23,15 +26,20 @@ public class AutEtiqueta {
         Q2,
         Q3,
         Q4,
+        Q5,
         CIERRE_ETIQUETA,
-        ERROR
+        Q6, Q7, Q8, ERROR
     }
 
-    public Optional<List<Token>> obtenerTokens(String etiqueta){
+    public Optional<List<Token>> obtenerTokens(String etiqueta, int numeroFila, int numeroColumna){
         List<Token> tokens = new ArrayList<>();
         ESTADO estadoActual = ESTADO.Q0;
         StringBuilder lexemaActual = new StringBuilder();
+        StringBuilder etiquetaCompleta = new StringBuilder();
         boolean esEtiquetaLinea = false;
+
+        this.numeroFila = numeroFila;
+        this.numeroColumna = numeroColumna;
 
         for (int i = 0; i < etiqueta.length(); i++) {
             char caracter = etiqueta.charAt(i);
@@ -39,25 +47,39 @@ public class AutEtiqueta {
             switch (estadoActual) {
                 case Q0:
                     if (caracter == '<') {
-                        lexemaActual.append(caracter);
+                        etiquetaCompleta.append(caracter);
                         estadoActual = ESTADO.Q1;
                     }
                     break;
 
                 case Q1:
-                    if (caracter == '/') {
-                        lexemaActual.append(caracter);
+                    if (caracter == '/' && etiqueta.charAt(i-1) == '<') {
                         estadoActual = ESTADO.CIERRE_ETIQUETA;
                     } else if (Character.isLetterOrDigit(caracter)) {
                         lexemaActual.append(caracter);
                     } else if (caracter == ' ') {
-                        lexemaActual.append(caracter);
-                        estadoActual = ESTADO.Q2;
+                        String traduccion = traductorHtml.traducirEtiqueta(lexemaActual.toString());
+                        if (traduccion != null){
+                            etiquetaCompleta.append(traduccion);
+                            etiquetaCompleta.append(caracter);
+                            lexemaActual.setLength(0);
+                            estadoActual = ESTADO.Q5;
+                        }else {
+                            estadoActual = ESTADO.ERROR;
+                        }
                     } else if (caracter == '>') {
-                        lexemaActual.append(caracter);
-                        tokens.add(new Token(TIpoTokenHtml.ETIQUETA_APERTURA, lexemaActual.toString(), "Html"));
-                        lexemaActual.setLength(0);
-                        estadoActual = ESTADO.Q0;
+                        String traduccion = traductorHtml.traducirEtiqueta(lexemaActual.toString());
+                        if (traduccion != null){
+                            lexemaActual.setLength(0);
+                            lexemaActual.append(traduccion);
+                            lexemaActual.append(caracter);
+                            tokens.add(new Token(TIpoTokenHtml.ETIQUETA_APERTURA, "<" + lexemaActual.toString(), "Html",numeroFila, numeroColumna));
+                            estadoActual = ESTADO.Q0;
+                        } else {
+                            estadoActual = ESTADO.ERROR;
+                        }
+                    }else {
+                        estadoActual = ESTADO.ERROR;
                     }
                     break;
 
@@ -65,58 +87,85 @@ public class AutEtiqueta {
                     if (Character.isLetterOrDigit(caracter)) {
                         lexemaActual.append(caracter);
                     } else if (caracter == '>') {
-                        lexemaActual.append(caracter);
-                        tokens.add(new Token(TIpoTokenHtml.ETIQUETA_CIERRE, lexemaActual.toString(), "Html"));
-                        lexemaActual.setLength(0);
-                        estadoActual = ESTADO.Q0;
+                        String traduccion = traductorHtml.traducirEtiqueta(lexemaActual.toString());
+                        if (traduccion != null){
+                            lexemaActual.setLength(0);
+                            lexemaActual.append(traduccion);
+                            lexemaActual.append(caracter);
+                            tokens.add(new Token(TIpoTokenHtml.ETIQUETA_CIERRE, "</"+ lexemaActual.toString(), "Html",numeroFila, numeroColumna));
+                            estadoActual = ESTADO.Q0;
+                        } else {
+                            estadoActual = ESTADO.ERROR;
+                        }
                     } else {
                         estadoActual = ESTADO.ERROR;
                     }
                     break;
-
-                case Q2:
-                    if (Character.isLetterOrDigit(caracter) || caracter == '-' || caracter == '_') {
+                case Q5:
+                    if (Character.isLetterOrDigit(caracter)){
+                        etiquetaCompleta.append(caracter);
                         lexemaActual.append(caracter);
                     } else if (caracter == '=') {
-                        lexemaActual.append(caracter);
-                        estadoActual = ESTADO.Q3;
-                    } else if (caracter == '/') {
-                        esEtiquetaLinea = true;
-                        lexemaActual.append(caracter);
-                    } else if (caracter == '>') {
-                        lexemaActual.append(caracter);
-                        if (esEtiquetaLinea) {
-                            tokens.add(new Token(TIpoTokenHtml.ETIQUETA_UNA_LINEA, lexemaActual.toString(), "Html"));
-                        } else {
-                            tokens.add(new Token(TIpoTokenHtml.ETIQUETA_APERTURA, lexemaActual.toString(), "Html"));
+                        if (palabraReservada.esPalabraReservada(lexemaActual.toString())){
+                            lexemaActual.append(caracter);
+                            etiquetaCompleta.append(caracter);
+                            estadoActual = ESTADO.Q6;
+                        }else {
+                            estadoActual = ESTADO.ERROR;
                         }
-                        lexemaActual.setLength(0);
-                        esEtiquetaLinea = false;
-                        estadoActual = ESTADO.Q0;
+                    }else {
+                            estadoActual = ESTADO.ERROR;
+
                     }
                     break;
-
-                case Q3:
-                    if (caracter == '"') {
+                case Q6:
+                    if (caracter == '\"'){
+                        etiquetaCompleta.append(caracter);
                         lexemaActual.append(caracter);
-                        if (lexemaActual.toString().endsWith("\"")) {
-                            estadoActual = ESTADO.Q2;
-                        }
+                        estadoActual = ESTADO.Q7;
+                    }else {
+                        estadoActual = ESTADO.ERROR;
+                    }
+
+                    break;
+                case Q7:
+                    if (caracter == '>' || caracter == '/'){
+                        estadoActual = ESTADO.ERROR;
+                    }
+                    if (caracter != '\"') {
+                        etiquetaCompleta.append(caracter);
+                        lexemaActual.append(caracter);
                     } else {
+                        etiquetaCompleta.append(caracter);
                         lexemaActual.append(caracter);
+                        lexemaActual.setLength(0);
+                        estadoActual = ESTADO.Q8;
+                    }
+                    break;
+                case Q8:
+                    if (caracter == '>') {
+                        lexemaActual.append(caracter);
+                        etiquetaCompleta.append(caracter);
+                        tokens.add(new Token(TIpoTokenHtml.ETIQUETA_APERTURA, etiquetaCompleta.toString(), "Html", numeroFila, numeroColumna));
+                        lexemaActual.setLength(0);
+                        estadoActual = ESTADO.Q0;
+                    } else if (caracter == '/' ) {
+                        etiquetaCompleta.append(caracter);
+                        tokens.add(new Token(TIpoTokenHtml.ETIQUETA_UNA_LINEA, etiquetaCompleta.toString() + ">", "Html", numeroFila, numeroColumna));
+                        estadoActual = ESTADO.Q0;
+                    }else {
+                        estadoActual = ESTADO.ERROR;
                     }
                     break;
 
-                case Q4:
-                    if (caracter == '/') {
-                        lexemaActual.append(caracter);
-                    } else if (caracter == '>') {
-                        lexemaActual.append(caracter);
-                        tokens.add(new Token(TIpoTokenHtml.ETIQUETA_UNA_LINEA, lexemaActual.toString(), "Html"));
-                        lexemaActual.setLength(0);
-                        estadoActual = ESTADO.Q0; // regresar al estado inicial
-                    }
-                    break;
+                case ERROR:
+                    return Optional.empty();
+            }
+            if (caracter == '\n') {
+                numeroFila++;
+                numeroColumna = 1;
+            } else {
+                numeroColumna++;
             }
         }
 
@@ -126,6 +175,7 @@ public class AutEtiqueta {
 
         return Optional.of(tokens);
     }
+
 
     private boolean esEtiquetaValida(String etiqueta) {
         String etiquetaTraducida = traductorHtml.traducirEtiqueta(etiqueta); // traducir siempre el tag
@@ -137,5 +187,19 @@ public class AutEtiqueta {
         };
     }
 
+    public int getNumeroFila() {
+        return numeroFila;
+    }
 
+    public void setNumeroFila(int numeroFila) {
+        this.numeroFila = numeroFila;
+    }
+
+    public int getNumeroColumna() {
+        return numeroColumna;
+    }
+
+    public void setNumeroColumna(int numeroColumna) {
+        this.numeroColumna = numeroColumna;
+    }
 }

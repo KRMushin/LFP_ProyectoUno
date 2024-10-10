@@ -6,6 +6,7 @@ package com.mycompany.proyectounolfp.bakend.analizadores;
 
 import com.mycompany.proyectounolfp.backend.Secciones.ExtractorSecciones;
 import com.mycompany.proyectounolfp.backend.Secciones.Seccion;
+import com.mycompany.proyectounolfp.backend.util.GeneradorHtml;
 import com.mycompany.proyectounolfp.backend.util.TipoEstadoToken;
 import com.mycompany.proyectounolfp.backend.tokens.Token;
 import com.mycompany.proyectounolfp.bakend.analizadores.AnalizadorCss.AnalizadorCss;
@@ -42,29 +43,50 @@ public class AnalizadorCodigoFuente {
         List<Seccion> seccionesEncontradas = extractorSecciones.extraerSeccionesFuente(codigoFuente);
         List<Token> tokensAnalisis = obtenerTokensAnalisis(seccionesEncontradas);
         List<Token> reporteTokens = obtenerTokensValidos(tokensAnalisis);
+        List<Token> reporteErrores = obtenerErrores(tokensAnalisis);
+        List<Token> reporteOptimizacion = obtenerOptimizaciones(seccionesEncontradas);
 
         if (!tokensAnalisis.isEmpty()) {
             panelReportes.setVisible(true);
             panelReportes.setReporteTokens(reporteTokens);
+            panelReportes.setReporteErrores(reporteErrores);
+            panelReportes.setReporteOptimizacion(reporteOptimizacion);
+
         }
-//        List<Token> reporteTokens = obtenerTokensValidos(tokensAnalisis);
-//        List<Token> reporteOptimizacion = optimizarCodigo(tokensAnalisis);
-//        List<Token> reporteErrores = obtenerErrores(tokensAnalisis);
 
         for (Token token : tokensAnalisis) {
             System.out.println(token.getLexema() + "   TipoToken: " + token.getTipoToken());
         }
+        GenerarHTML(reporteTokens);
+
+    }
+
+    private void GenerarHTML(List<Token> reporteTokens) {
+        GeneradorHtml g = new GeneradorHtml();
+        g.generarHtmlConTokens(reporteTokens,"manias.html");
+
+    }
+
+    private List<Token> obtenerOptimizaciones(List<Seccion> seccionesEncontradas) {
+        List<Token> optimizaciones = new ArrayList<>();
+        for (Seccion seccion : seccionesEncontradas) {
+            List<Token> tokensOptimizacion = seccion.getOptimizaciones();
+            if (tokensOptimizacion != null) {
+                optimizaciones.addAll(tokensOptimizacion);
+            }
+        }
+        return  optimizaciones;
     }
 
     private List<Token> obtenerErrores(List<Token> tokensAnalisis) {
-        return null;
-    }
-
-    private List<Token> optimizarCodigo(List<Token> tokensAnalisis) {
-        
-
-
-        return null;
+        List<Token> tokens = new ArrayList<>();
+        for (int i = 0; i < tokensAnalisis.size(); i++) {
+            Token token = tokensAnalisis.get(i);
+            if (token != null && token.getTipoToken().toString().equalsIgnoreCase("error")) {
+                tokens.add(token);
+            }
+        }
+        return tokens;
     }
 
     private List<Token> obtenerTokensAnalisis(List<Seccion> seccionesEncontradas) {
@@ -95,12 +117,12 @@ public class AnalizadorCodigoFuente {
 
     private List<Token> obtenerTokensValidos(List<Token> tokensAnalisis) {
         List<Token> tokens = new ArrayList<>();
-        
+
          for (int i = 0; i < tokensAnalisis.size(); i++) {
                Token token = tokensAnalisis.get(i);
                if (token != null) {
                String tokenType = token.getTipoToken().toString();
-               if (!tokenType.equalsIgnoreCase("comentario") || !tokenType.equalsIgnoreCase("error")) {
+               if (!tokenType.equalsIgnoreCase("comentario") && !tokenType.equalsIgnoreCase("error")) {
                    tokens.add(token);
                }
              }
